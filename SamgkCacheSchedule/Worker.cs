@@ -33,7 +33,7 @@ public class Worker : BackgroundService
                 currentDate = currentDate.AddDays(1);
             
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 3; i++)
             {
                 _logger.LogInformation($"Begin caching at: {currentDate}");
                 
