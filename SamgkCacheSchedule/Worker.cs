@@ -31,7 +31,6 @@ public class Worker : BackgroundService
 
             while (currentDate.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
                 currentDate = currentDate.AddDays(1);
-            
 
             for (int i = 0; i < 3; i++)
             {
@@ -42,7 +41,7 @@ public class Worker : BackgroundService
                     var query = new ScheduleQuery()
                         .WithAllForSearchType(ScheduleSearchType.Employee)
                         .WithDelay(0)
-                        .WithDate(DateOnly.FromDateTime(DateTime.Now));
+                        .WithDate(DateOnly.FromDateTime(currentDate));
 
                     var schedule = await _clientSamgkApi.Schedule.GetScheduleAsync(query, stoppingToken);
                     var json = JsonConvert.SerializeObject(schedule);
