@@ -25,26 +25,61 @@ public class Worker : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
-            { 
-                var query = new ScheduleQuery()
-                    .WithAllForSearchType(ScheduleSearchType.Employee)
-                    .WithDelay(0)
-                    .WithDate(DateOnly.FromDateTime(DateTime.Now));
-                
-                var schedule = await _clientSamgkApi.Schedule.GetScheduleAsync(query, stoppingToken);
-                var json = JsonConvert.SerializeObject(schedule);
-                await _firebaseClient
-                    .Child(DateOnly.FromDateTime(DateTime.Now).ToString("yy-MM-dd"))
-                    .PutAsync(json);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            await WaitForAllowedTime(stoppingToken);
+            
+            var currentDate = DateTime.Now;
 
-            await Task.Delay(1000, stoppingToken);
+            while (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
+                currentDate = currentDate.AddDays(1);
+            
+
+            for (int i = 0; i < 2; i++)
+            {
+                _logger.LogInformation($"Begin caching at: {currentDate}");
+                
+                try
+                {
+                    var query = new ScheduleQuery()
+                        .WithAllForSearchType(ScheduleSearchType.Employee)
+                        .WithDelay(2500)
+                        .WithDate(DateOnly.FromDateTime(DateTime.Now));
+
+                    var schedule = await _clientSamgkApi.Schedule.GetScheduleAsync(query, stoppingToken);
+                    var json = JsonConvert.SerializeObject(schedule);
+                    await _firebaseClient
+                        .Child(DateOnly.FromDateTime(DateTime.Now).ToString("yy-MM-dd"))
+                        .PutAsync(json);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogInformation($"Failed cache at: {currentDate}");
+                }
+                _logger.LogInformation($"End caching at: {currentDate}");
+                currentDate = currentDate.AddDays(1);
+            }
+            
+            await Task.Delay(12600000, stoppingToken);
         }
+    }
+
+    protected async Task WaitForAllowedTime(CancellationToken cancellationToken)
+    {
+        while (!CanWorkSerivce(DateTime.Now))
+        {
+            await Task.Delay(1000, cancellationToken);
+        }
+    }
+
+    protected virtual bool CanWorkSerivce(DateTime nowTime)
+    {
+#if DEBUG
+        return true;
+#else
+        return nowTime.Hour switch
+        {
+            >= 19 or <= 7 => false,
+            _ => true
+        };
+#endif
     }
 }
