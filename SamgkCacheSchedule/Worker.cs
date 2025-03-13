@@ -41,13 +41,13 @@ public class Worker : BackgroundService
                 {
                     var query = new ScheduleQuery()
                         .WithAllForSearchType(ScheduleSearchType.Employee)
-                        .WithDelay(2500)
+                        .WithDelay(0)
                         .WithDate(DateOnly.FromDateTime(DateTime.Now));
 
                     var schedule = await _clientSamgkApi.Schedule.GetScheduleAsync(query, stoppingToken);
                     var json = JsonConvert.SerializeObject(schedule);
                     await _firebaseClient
-                        .Child(DateOnly.FromDateTime(DateTime.Now).ToString("yy-MM-dd"))
+                        .Child(currentDate.ToString("yy-MM-dd"))
                         .PutAsync(json);
                 }
                 catch (Exception e)
