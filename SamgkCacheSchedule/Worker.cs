@@ -29,7 +29,7 @@ public class Worker : BackgroundService
             
             var currentDate = DateTime.Now;
 
-            while (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
+            while (currentDate.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
                 currentDate = currentDate.AddDays(1);
             
 
