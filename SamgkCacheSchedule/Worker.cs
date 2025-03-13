@@ -29,11 +29,11 @@ public class Worker : BackgroundService
             
             var currentDate = DateTime.Now;
 
-            while (currentDate.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-                currentDate = currentDate.AddDays(1);
-
             for (int i = 0; i < 3; i++)
             {
+                while (currentDate.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+                    currentDate = currentDate.AddDays(1);
+                
                 _logger.LogInformation($"Begin caching at: {currentDate}");
                 
                 try
